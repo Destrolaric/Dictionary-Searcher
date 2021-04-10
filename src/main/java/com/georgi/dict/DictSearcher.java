@@ -10,10 +10,15 @@ import java.util.Stack;
 public class DictSearcher {
     private final DictSearcher Me = this;
     private File dictionary;
-    private JList resultList;
+
     private JButton pathButton;
     private JTextField searchBar;
     private ProcessController processController;
+    private JPanel Manager;
+    private JCheckBox searchBySequenceCheckBox;
+
+    //We are not using JList due to hidden size limitations, which on large values can cause exceptions;
+    private JTextArea resultList;
 
     public void main(String[] args) {
         JFrame frame = new JFrame("DictSearcher");
@@ -22,8 +27,6 @@ public class DictSearcher {
         frame.pack();
         frame.setVisible(true);
     }
-
-    private JPanel Manager;
 
 
     public DictSearcher() {
@@ -36,7 +39,7 @@ public class DictSearcher {
                 if (result == JFileChooser.APPROVE_OPTION) {
                     File file = fc.getSelectedFile();
                     dictionary = file;
-                    processController = new ProcessController(file, Me);
+                    processController = new ProcessController(file, Me, searchBySequenceCheckBox.isSelected());
                 }
             }
         });
@@ -62,11 +65,24 @@ public class DictSearcher {
                 search();
             }
         });
+        searchBySequenceCheckBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (processController != null) {
+                    processController.setType(searchBySequenceCheckBox.isSelected());
+                    killSearch();
+                    search();
+                }
+            }
+        });
     }
 
     private void killSearch() {
         if (processController != null && processController.getRunnablePool() != null) {
-            for (Thread thread : processController.getExecutionList()){
+            for (SearchAgent searchAgent : processController.getRunnablePool()) {
+                searchAgent.interrupt();
+            }
+            for (Thread thread : processController.getExecutionList()) {
                 thread.interrupt();
             }
             if (processController.getParseAgent() != null) {
@@ -77,21 +93,29 @@ public class DictSearcher {
 
     private void search() {
         killSearch();
-        DefaultListModel listModel = (DefaultListModel) resultList.getModel();
-        listModel.removeAllElements();
-        resultList.setModel(listModel);
+        resultList.setText("");
+
         if (searchBar.getText() != null && !searchBar.getText().equals("") && dictionary != null && dictionary.exists()) {
             processController.findSimilarWords(searchBar.getText().toLowerCase());
         }
     }
 
     synchronized public void addToList(Stack<String> stack) throws InterruptedException {
-        DefaultListModel<String> model = (DefaultListModel) resultList.getModel();
-        //This is so fast, what i need to slow it down otherwise gui will catch Out OF Bounds error due to trying to update
+        synchronized (this) {
+            StringBuilder text = new StringBuilder(resultList.getText());
+            for (String word : stack) {
+                text.append(word).append(System.lineSeparator());
+            }
+            Runnable runnable = new Runnable() {
+                public void run() {
+                    resultList.setText(text.toString());
 
-        for (String word : stack) {
-            model.addElement(word);
+                }
+            };
+            SwingUtilities.invokeLater(runnable);
         }
-        resultList.setModel(model);
     }
+
+
+    ;
 }

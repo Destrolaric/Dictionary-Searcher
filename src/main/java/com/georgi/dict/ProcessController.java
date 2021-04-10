@@ -1,5 +1,6 @@
 package com.georgi.dict;
 
+
 import java.io.*;
 
 import java.util.LinkedList;
@@ -13,9 +14,14 @@ public class ProcessController {
     private final DictSearcher fatherGui;
     private ParseAgent parseAgent;
     private List<Thread> executionList;
+    boolean type;
 
     public List<Thread> getExecutionList() {
         return executionList;
+    }
+
+    public void setType(boolean type) {
+        this.type = type;
     }
 
     public ParseAgent getParseAgent() {
@@ -26,10 +32,11 @@ public class ProcessController {
         return runnablePool;
     }
 
-    public ProcessController(File file, DictSearcher father) {
+    public ProcessController(File file, DictSearcher father, boolean type) {
         this.fatherGui = father;
         this.threads = Runtime.getRuntime().availableProcessors();
         this.parsedFile = file;
+        this.type = type;
     }
 
     public void findSimilarWords(String searchedWord)  {
@@ -39,16 +46,13 @@ public class ProcessController {
             LinkedBlockingQueue<String>[] queues = new LinkedBlockingQueue[threads];
             for (int i = 0; i < threads; i++) {
                 queues[i] = new LinkedBlockingQueue<>();
-                runnablePool[i] = new SearchAgent(i, queues[i], searchedWord, fatherGui);
+                runnablePool[i] = new SearchAgent(i, queues[i], searchedWord, fatherGui, type);
             }
 
-            long startTime = System.nanoTime();
             parseAgent = new ParseAgent(parsedFile, queues, threads);
 
             Thread parseThread = new Thread(parseAgent);
             parseThread.start();
-            long endTime = System.nanoTime();
-            System.out.println((endTime - startTime) / 1000000 + "ms");
             executionList = new LinkedList<>();
             for (SearchAgent run : runnablePool) {
                 Thread thread = new Thread(run);

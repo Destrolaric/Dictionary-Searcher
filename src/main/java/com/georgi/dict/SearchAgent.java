@@ -1,6 +1,5 @@
 package com.georgi.dict;
 
-import java.util.Queue;
 import java.util.Stack;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -9,19 +8,25 @@ public class SearchAgent implements Runnable {
     int number;
     private final String substring;
     private final DictSearcher dictSearcher;
-    boolean interrupted = false;
     Stack<String> returnBatch;
+    Searcher searcher;
+    boolean interrupted;
 
-    public SearchAgent(int threadNumber, LinkedBlockingQueue<String> linkedBlockingQueue, String substring, DictSearcher dictSearcher) {
+    public void interrupt(){
+        interrupted = true;
+    }
+    public SearchAgent(int threadNumber, LinkedBlockingQueue<String> linkedBlockingQueue, String substring, DictSearcher dictSearcher, boolean type) {
         this.substring = substring;
         this.number = threadNumber;
         this.words = linkedBlockingQueue;
         this.dictSearcher = dictSearcher;
         returnBatch = new Stack<>();
-    }
+        if (type) {
+            searcher = new SequenceStringSearcher();
 
-    public void interrupt() {
-        interrupted = true;
+        } else {
+            searcher = new SubStringSearcher();
+        }
     }
 
     @Override
@@ -30,20 +35,20 @@ public class SearchAgent implements Runnable {
             try {
                 String word = words.take().toLowerCase();
                 if (word.equals("-1")) {
-                    if (returnBatch.size() > 0){
-                        if (!interrupted) dictSearcher.addToList(returnBatch);
+                    if (returnBatch.size() > 0) {
+                        dictSearcher.addToList(returnBatch);
                     }
                     return;
                 }
-                if (Searcher.subStringSearch(word, substring)) {
+                if (searcher.search(word, substring)) {
                     returnBatch.push(word);
-                    if (returnBatch.size() == 10){
-                        if (!interrupted) dictSearcher.addToList(returnBatch);
+                    if (returnBatch.size() == 5) {
+                        dictSearcher.addToList(returnBatch);
                         returnBatch.empty();
                     }
                 }
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                return;
             }
         }
     }
