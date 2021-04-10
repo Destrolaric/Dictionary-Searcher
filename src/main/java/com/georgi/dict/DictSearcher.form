@@ -27,7 +27,9 @@
         <children>
           <component id="8fa3" class="javax.swing.JTextArea" binding="resultList">
             <constraints/>
-            <properties/>
+            <properties>
+              <editable value="false"/>
+            </properties>
           </component>
         </children>
       </scrollpane>
@@ -51,4 +53,8 @@
       </component>
     </children>
   </grid>
+  <inspectionSuppressions>
+    <suppress inspection="NoLabelFor" id="8fa3"/>
+    <suppress inspection="NoLabelFor" id="1423f"/>
+  </inspectionSuppressions>
 </form>
