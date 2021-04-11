@@ -15,6 +15,8 @@
                 <configuration>
                     <archive>
                         <manifest>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
                             <mainClass>com.georgi.dict.Main</mainClass>
                         </manifest>
                     </archive>
