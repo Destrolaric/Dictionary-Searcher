@@ -30,19 +30,6 @@ public class DictSearcher {
 
 
     public DictSearcher() {
-        pathButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JFileChooser fc = new JFileChooser();
-                int result = fc.showOpenDialog(Manager);
-
-                if (result == JFileChooser.APPROVE_OPTION) {
-                    File file = fc.getSelectedFile();
-                    dictionary = file;
-                    processController = new ProcessController(file, Me, searchBySequenceCheckBox.isSelected());
-                }
-            }
-        });
         searchBar.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
@@ -72,6 +59,19 @@ public class DictSearcher {
                     processController.setType(searchBySequenceCheckBox.isSelected());
                     killSearch();
                     search();
+                }
+            }
+        });
+        pathButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser fc = new JFileChooser();
+                int result = fc.showOpenDialog(Manager);
+
+                if (result == JFileChooser.APPROVE_OPTION) {
+                    File file = fc.getSelectedFile();
+                    dictionary = file;
+                    processController = new ProcessController(file, Me, searchBySequenceCheckBox.isSelected());
                 }
             }
         });
