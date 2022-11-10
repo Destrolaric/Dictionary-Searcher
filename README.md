@@ -1,5 +1,5 @@
 # Dictionary-Searcher
-* swing based multithreaded parser for finding substring in large .txt files. Works with english alphabet letters.
+* swing based program which uses multithreaded parser for finding substring in large .txt files. Works with english alphabet letters.
 * Have an additional functionality of searching sequences of chars. 
 * Program parses and searches in the same time, memory amount needed depends on you CPU.
 # How to run
